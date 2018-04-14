@@ -1,0 +1,8 @@
+16-36-64-128
+1024
+32
+#train batch size
+trainBatchSize = 128
+
+#test batch size
+testBatchSize = 3040

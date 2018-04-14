@@ -1,0 +1,7 @@
+16-36-64-128
+1024
+32
+testª¬ªp¬ù: 0.88% (1024 validation samples)
+
+input: data3(Homus datasets)
+code: CNN_sample5.py
