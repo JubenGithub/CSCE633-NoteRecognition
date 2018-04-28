@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import Section
+import glob
+from scipy import signal, misc
 
 #number of classes is 2 (squares and triangles)
 nClass=32
@@ -15,11 +17,35 @@ simpleModel=False
 height= 64
 width= 64
 
-#input is 2d Numpy array.(height x width)
+#input is 2d Numpy array
 #to show picture
 def plot_image(image):
-    plt.imshow(image.reshape(height,width), cmap = 'binary')
+    plt.imshow(image, cmap = 'binary')
     plt.show()
+
+#input: image any size, note type (black, black_rev, white,or white_rev)
+#return: height position of input img    
+def conv_noteMask(im, type_str):
+    sum_height = 0
+    count = 0
+    
+    for filename in glob.glob('./note_mask/'+ type_str +'/*.png'): #assuming gif
+        mask=Image.open(filename).convert('L')
+        mask = 1 - (np.array(mask, float)/255)
+        rev_mask = np.flipud(np.fliplr(mask))
+        res = signal.convolve2d(im, rev_mask, boundary='fill', mode='same')
+        h,w = np.where(res == res.max()) #max value in
+        if(len(h)!=1):
+            h_val = int(h[0]) #more than 2 position has max value
+        else:
+            h_val = int(h)
+        sum_height += h_val
+        count += 1
+
+    if count!=0 :
+        return sum_height/count
+    else:
+        return 0
 
 #input is 2d Numpy array().(1 x nClass)
 # to output label meaning in word
