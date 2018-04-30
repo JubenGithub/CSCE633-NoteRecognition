@@ -115,105 +115,88 @@ if simpleModel:
     W = tf.Variable(tf.zeros([width*height, nClass]))
     # b is vector which has a size corresponding to number of classes
     b = tf.Variable(tf.zeros([nClass]))
-    
+
     # define output calc (for each class) y = softmax(Wx+b)
     # softmax gives probability distribution across all classes
     y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 else:
     # run convolutional neural network model given in "Expert MNIST" TensorFlow tutorial
-    
+
     # functions to init small positive weights and biases
     def weight_variable(shape):
         initial = tf.truncated_normal(shape, stddev=0.1)
         return tf.Variable(initial)
-    
+
     def bias_variable(shape):
         initial = tf.constant(0.1, shape=shape)
         return tf.Variable(initial)
-    
-    # set up "vanilla" versions of convolution and pooling
+
+  # set up "vanilla" versions of convolution and pooling
     def conv2d(x, W):
         return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
-    
+
     def max_pool_2x2(x):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
-                              strides=[1, 2, 2, 1], padding='SAME')
-    
+                          strides=[1, 2, 2, 1], padding='SAME')
+
     print ("Running Convolutional Neural Network Model")
-    nFeatures1 = 16
-    nFeatures2 = 36
-    nFeatures3 = 64
-    nFeatures4 = 128
+    nFeatures1 = 32
+    nFeatures2 = 140
     nNeuronsfc = 1024
-    
+
     # use functions to init weights and biases
     # nFeatures1 features for each patch of size 5x5
     # SAME weights used for all patches
     # 1 input channel
-    W_conv1 = weight_variable([5, 5, 1, nFeatures1])
+    W_conv1 = weight_variable([3, 3, 1, nFeatures1])
     b_conv1 = bias_variable([nFeatures1])
-    
-    # reshape raw image data to 4D tensor. 2nd and 3rd indexes are W,H, fourth
+  
+    # reshape raw image data to 4D tensor. 2nd and 3rd indexes are W,H, fourth 
     # means 1 colour channel per pixel
     # x_image = tf.reshape(x, [-1,28,28,1])
     x_image = tf.reshape(x, [-1,width,height,1])
-    
-    # hidden layer 1
+  
+    # hidden layer 1 
     # pool(convolution(Wx)+b)
     # pool reduces each dim by factor of 2.
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
     h_pool1 = max_pool_2x2(h_conv1)
-    
+      
     # similarly for second layer, with nFeatures2 features per 5x5 patch
     # input is nFeatures1 (number of features output from previous layer)
-    W_conv2 = weight_variable([5, 5, nFeatures1, nFeatures2])
+    W_conv2 = weight_variable([3, 3, nFeatures1, nFeatures2])
     b_conv2 = bias_variable([nFeatures2])
-    
+
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
     h_pool2 = max_pool_2x2(h_conv2)
-    
-    # similarly for second layer, with nFeatures3 features per 3x3 patch
-    # input is nFeatures2 (number of features output from previous layer)
-    W_conv3 = weight_variable([3, 3, nFeatures2, nFeatures3])
-    b_conv3 = bias_variable([nFeatures3])
-    
-    h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3)
-    h_pool3 = max_pool_2x2(h_conv3)
-    
-    W_conv4 = weight_variable([3, 3, nFeatures3, nFeatures4])
-    b_conv4 = bias_variable([nFeatures4])
-    
-    h_conv4 = tf.nn.relu(conv2d(h_pool3, W_conv4) + b_conv4)
-    h_pool4 = max_pool_2x2(h_conv4)
-    
-    
+  
     # denseley connected layer. Similar to above, but operating
-    # on entire image (rather than patch) which has been reduced by a factor of 4
+    # on entire image (rather than patch) which has been reduced by a factor of 4 
     # in each dimension
-    # so use large number of neurons
-    
+    # so use large number of neurons 
+
     # check our dimensions are a multiple of 4
     #if (width%4 or height%4):
     #  print "Error: width and height must be a multiple of 4"
     #  sys.exit(1)
-    
-    W_fc1 = weight_variable([(width//16) * (height//16) * nFeatures4, nNeuronsfc])
+      
+    W_fc1 = weight_variable([(width//4) * (height//4) * nFeatures2, nNeuronsfc])
     b_fc1 = bias_variable([nNeuronsfc])
-    
+      
     # flatten output from previous layer
-    h_pool4_flat = tf.reshape(h_pool4, [-1, (width//16) * (height//16) * nFeatures4])
-    h_fc1 = tf.nn.relu(tf.matmul(h_pool4_flat, W_fc1) + b_fc1)
-    
+    h_pool2_flat = tf.reshape(h_pool2, [-1, (width//4) * (height//4) * nFeatures2])
+    h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+      
     # reduce overfitting by applying dropout
     # each neuron is kept with probability keep_prob
     keep_prob = tf.placeholder(tf.float32)
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
-    
+      
     # create readout layer which outputs to nClass categories
     W_fc2 = weight_variable([nNeuronsfc, nClass])
     b_fc2 = bias_variable([nClass])
-    
+      
     # define output calc (for each class) y = softmax(Wx+b)
     # softmax gives probability distribution across all classes
     # this is not run until later
@@ -240,7 +223,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 saver = tf.train.Saver()
 
 #load paths
-ckpt_path = './model/617711/'
+ckpt_path = './model/632339/'
 ckpt = tf.train.get_checkpoint_state(checkpoint_dir=ckpt_path)
 
 saver.restore(sess, ckpt.model_checkpoint_path)
